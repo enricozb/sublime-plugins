@@ -1,9 +1,9 @@
+import os
 import sublime
 import sublime_plugin
 
 class PickScheme(sublime_plugin.WindowCommand):
     def pull(self, pattern, dst):
-        import os
         
         name = os.path.basename(self.settings.get('color_scheme'))
         root = os.path.dirname(sublime.packages_path())
