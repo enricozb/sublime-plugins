@@ -4,7 +4,6 @@ import sublime_plugin
 
 class PickScheme(sublime_plugin.WindowCommand):
     def pull(self, pattern, dst):
-        
         name = os.path.basename(self.settings.get('color_scheme'))
         root = os.path.dirname(sublime.packages_path())
         exists = lambda file: os.path.exists(os.path.join(root, file))
