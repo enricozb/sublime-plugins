@@ -23,6 +23,7 @@ class PickScheme(sublime_plugin.WindowCommand):
         items = sorted(items, key = lambda list: list[0].lower())
         
         index = items.index(list(self.settings.get('color_scheme')))
+        
         on_highlight = lambda i: self.settings.set('color_scheme', items[index if (i is -1) else i][1])
         
         on_select = lambda i: (on_highlight(i), sublime.save_settings('Preferences.sublime-settings'))
