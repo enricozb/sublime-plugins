@@ -3,6 +3,12 @@ import sublime
 import sublime_plugin
 
 class PickScheme(sublime_plugin.WindowCommand):
+    def __init__(self, window):
+        self.window = window
+        self.settings = sublime.load_settings('Preferences.sublime-settings')
+        
+        self.pull('*.tmTheme', 'Packages/User/Color Schemes')
+        
     def pull(self, pat, dst):
         name = os.path.basename(self.settings.get('color_scheme'))
         root = os.path.dirname(sublime.packages_path())
@@ -14,18 +20,12 @@ class PickScheme(sublime_plugin.WindowCommand):
         self.settings.set('color_scheme', sublime.find_resources(name)[0])
 
     def run(self):
-        self.settings = sublime.load_settings('Preferences.sublime-settings')
         tolist = lambda res: [os.path.basename(res).split('.')[0], res]
+        sortkey = lambda list: list[0].lower()
         
-        self.pull('*.tmTheme', 'Packages/User/Color Schemes')
-        
-        items = map(tolist, sublime.find_resources('*.tmTheme'))
-        items = sorted(items, key = lambda list: list[0].lower())
-        
-        index = items.index(list(self.settings.get('color_scheme')))
-        
+        items = sorted(map(tolist, sublime.find_resources('*.tmTheme')), key = sortkey)
+        index = items.index(tolist(self.settings.get('color_scheme')))
         on_highlight = lambda i: self.settings.set('color_scheme', items[index if (i is -1) else i][1])
-        
         on_select = lambda i: (on_highlight(i), sublime.save_settings('Preferences.sublime-settings'))
         
         self.window.show_quick_panel(items, on_select, 0, index, on_highlight)
