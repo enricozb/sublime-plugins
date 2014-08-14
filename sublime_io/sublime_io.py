@@ -4,6 +4,8 @@ import sublime_plugin
 import subprocess
 import time
 
+# figure out a way to close input panel
+
 DOUBLE = {'cols': [0.0, 0.5, 1.0],
           'rows': [0.0, 1.0],
           'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]}
@@ -68,9 +70,10 @@ class SublimeIo(sublime_plugin.WindowCommand):
         else:
             chars = '[Finished in %.1fs]' % (elapsed)
         
-        self.output_view.run_command('move_to', {'to': 'eof'})
         self.output_view.set_read_only(False)
-        self.output_view.run_command('append', {'characters':  chars})
+        self.output_view.run_command('append', {'characters':  chars,
+                                                'force': True,
+                                                'scroll_to_end': True})
         self.output_view.set_read_only(True)
 
     def run(self):
