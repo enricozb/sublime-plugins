@@ -17,7 +17,6 @@ class SublimeIo(sublime_plugin.WindowCommand):
         self.layout = self.window.layout()
 
         self.proc = subprocess.Popen(args = cmd,
-                                     bufsize = 0,
                                      stdin = subprocess.PIPE,
                                      stdout = subprocess.PIPE,
                                      stderr = subprocess.STDOUT,
@@ -35,6 +34,13 @@ class SublimeIo(sublime_plugin.WindowCommand):
         self.output_view.set_scratch(True)
         self.output_view.set_read_only(True)
 
+    def append_string(self, string):
+        self.output_view.set_read_only(False)
+        self.output_view.run_command('append', {'characters':  string,
+                                                'force': True,
+                                                'scroll_to_end': True})
+        self.output_view.set_read_only(True)
+
     def input_panel(self):
         input_panel = self.window.show_input_panel('',
                                                    '',
@@ -44,7 +50,12 @@ class SublimeIo(sublime_plugin.WindowCommand):
         input_panel.settings().set('color_scheme', self.scheme)
 
     def on_done(self, string):
-        self.proc.stdin.write(string + '\n')
+        string += '\n'
+
+        self.proc.stdin.write(string)
+        self.output_view.set_read_only(False)
+        self.append_string(string)
+        self.output_view.set_read_only(True)
         self.proc.stdin.flush()
         self.input_panel()
 
@@ -55,11 +66,8 @@ class SublimeIo(sublime_plugin.WindowCommand):
 
     def finish(self):
         while self.proc.poll() is None:
-            stdout = self.proc.stdout.read()
             self.output_view.set_read_only(False)
-            self.output_view.run_command('append', {'characters': stdout,
-                                                    'force': True,
-                                                    'scroll_to_end': True})
+            self.append_string(self.proc.stdout.read())
             self.output_view.set_read_only(True)
 
         code = self.proc.poll()
@@ -68,16 +76,14 @@ class SublimeIo(sublime_plugin.WindowCommand):
         if code:
             chars = '[Finished in %.1fs with exit code %d]' % (elapsed, code)
         else:
-            chars = '[Finished in %.1fs]' % (elapsed)
+            chars = '[Finished in %.1fs]' % (elapsed,)
         
         self.output_view.set_read_only(False)
-        self.output_view.run_command('append', {'characters':  chars,
-                                                'force': True,
-                                                'scroll_to_end': True})
+        self.append_string(chars)
         self.output_view.set_read_only(True)
 
     def run(self):
-        self.init('C:/Users/Music/Desktop/script.exe')
+        self.init('python C:/Users/Music/Desktop/script.py')
         self.newlayout()
         self.input_panel()
         sublime.set_timeout_async(self.finish, 0)
