@@ -4,7 +4,7 @@ import sublime_plugin
 import subprocess
 import time
 
-# on cancel doesnt cause "finished in afafsafs" to appear
+# proc.kill not working
 
 class Del(sublime_plugin.TextCommand):
     def run(self, edit):
@@ -47,6 +47,7 @@ class SublimeIo(sublime_plugin.WindowCommand):
 
     def on_cancel(self):
         self.proc.kill()
+        print('exit', self.proc.poll())
         # self.output_view.close()
         # self.window.set_layout(self.layout)
 
@@ -63,11 +64,12 @@ class SublimeIo(sublime_plugin.WindowCommand):
         else:
             text = '[Finished in %.1fs]' % (elapsed,)
         
+        self.window.run_command('hide_panel')
         self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
 
     def run(self):
-        self.init('python C:/Users/Music/Desktop/script.py')
         self.set_layout()
+        self.init('python C:/Users/Music/Desktop/script.py')
         self.input_panel()
         sublime.set_timeout_async(self.async, 0)
         self.window.focus_view(self.view)
