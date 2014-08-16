@@ -4,87 +4,69 @@ import sublime_plugin
 import subprocess
 import time
 
-# figure out a way to close input panel
-
-DOUBLE = {'cols': [0.0, 0.5, 1.0],
-          'rows': [0.0, 1.0],
-          'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]}
+class Del(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.replace(edit, self.view.line(self.view.size()), '')
 
 class SublimeIo(sublime_plugin.WindowCommand):
-    def init(self, cmd):
+    def init(self, args):
         self.view = self.window.active_view()
         self.scheme = self.view.settings().get('color_scheme')
         self.layout = self.window.layout()
-
-        self.proc = subprocess.Popen(args = cmd,
+        self.start_time = time.time()
+        self.proc = subprocess.Popen(args = args,
                                      stdin = subprocess.PIPE,
                                      stdout = subprocess.PIPE,
                                      stderr = subprocess.STDOUT,
                                      shell = True,
                                      universal_newlines = True)
-        self.start_time = time.time()
 
-    def newlayout(self):
-        self.window.set_layout(DOUBLE)
+    def set_layout(self):
+        self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0], 'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
         self.window.focus_group(1)
-        
-        self.output_view = self.window.new_file()
-        
-        self.output_view.set_name('[output]')
-        self.output_view.set_scratch(True)
-        self.output_view.set_read_only(True)
+        self.window.new_file()
+        self.window.active_view().set_name('[output]')
+        self.window.active_view().set_scratch(True)
 
-    def append_string(self, string):
-        self.output_view.set_read_only(False)
-        self.output_view.run_command('append', {'characters':  string,
-                                                'force': True,
-                                                'scroll_to_end': True})
-        self.output_view.set_read_only(True)
+        self.output_view = self.window.active_view()
 
     def input_panel(self):
-        input_panel = self.window.show_input_panel('',
-                                                   '',
-                                                   self.on_done,
-                                                   None,
-                                                   self.on_cancel)
-        input_panel.settings().set('color_scheme', self.scheme)
+        self.window.show_input_panel('', '', self.on_done, self.on_change, self.on_cancel).settings().set('color_scheme', self.scheme)
 
-    def on_done(self, string):
-        string += '\n'
-
-        self.proc.stdin.write(string)
-        self.output_view.set_read_only(False)
-        self.append_string(string)
-        self.output_view.set_read_only(True)
+    def on_done(self, text):
+        self.output_view.run_command('append', {'characters': '\n', 'force': True, 'scroll_to_end': True})
+        self.proc.stdin.write(text + '\n')
         self.proc.stdin.flush()
         self.input_panel()
 
+    def on_change(self, text):
+        self.output_view.run_command('del')
+        self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
+
     def on_cancel(self):
         self.proc.kill()
-        self.output_view.close()
-        self.window.set_layout(self.layout)
+        self.proc.terminate()
+        # self.output_view.close()
+        # self.window.set_layout(self.layout)
 
-    def finish(self):
+    def async(self):
         while self.proc.poll() is None:
-            self.output_view.set_read_only(False)
-            self.append_string(self.proc.stdout.read())
-            self.output_view.set_read_only(True)
+            text = os.read(self.proc.stdout.fileno(), 2**15).decode().replace('\r\n', '\n').replace('\r', '\n')
+            self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
 
-        code = self.proc.poll()
+        exitcode = self.proc.poll()
         elapsed = time.time() - self.start_time
 
-        if code:
-            chars = '[Finished in %.1fs with exit code %d]' % (elapsed, code)
+        if exitcode:
+            text = '[Finished in %.1fs with exit code %d]' % (elapsed, exitcode)
         else:
-            chars = '[Finished in %.1fs]' % (elapsed,)
+            text = '[Finished in %.1fs]' % (elapsed,)
         
-        self.output_view.set_read_only(False)
-        self.append_string(chars)
-        self.output_view.set_read_only(True)
+        self.output_view.run_command('affix', {'text': text, 'live': False})
 
     def run(self):
         self.init('python C:/Users/Music/Desktop/script.py')
-        self.newlayout()
+        self.set_layout()
         self.input_panel()
-        sublime.set_timeout_async(self.finish, 0)
+        sublime.set_timeout_async(self.async, 0)
         self.window.focus_view(self.view)
