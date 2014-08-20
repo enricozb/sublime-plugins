@@ -36,8 +36,7 @@ class SublimeIo(sublime_plugin.WindowCommand):
     def async(self):
         while self.proc.poll() is None:
             text = os.read(self.proc.stdout.fileno(), 2 ** 15).decode().replace('\r\n', '\n').replace('\r', '\n')
-            if text:
-                self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
+            self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
 
         exitcode = self.proc.poll()
         elapsed = time.time() - self.start_time
