@@ -21,7 +21,6 @@ class SublimeIo(sublime_plugin.WindowCommand):
         self.window.active_view().set_scratch(True)
 
         self.output_view = self.window.active_view()
-        self.start = self.output_view.size()
 
     def on_done(self, text):
         self.proc.stdin.write(text + '\n')
@@ -39,7 +38,6 @@ class SublimeIo(sublime_plugin.WindowCommand):
             text = os.read(self.proc.stdout.fileno(), 2 ** 15).decode().replace('\r\n', '\n').replace('\r', '\n')
             if text:
                 self.output_view.run_command('append', {'characters':  text, 'force': True, 'scroll_to_end': True})
-                self.start = self.output_view.size()
 
         exitcode = self.proc.poll()
         elapsed = time.time() - self.start_time
