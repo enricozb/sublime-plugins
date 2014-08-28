@@ -55,13 +55,19 @@ class Make(sublime_plugin.WindowCommand):
         self.proc.write(string + "\n")
         self.output_view.run_command("append", {"characters": string + "\n"})
         self.output_view.run_command("move_to", {"to": "eof"})
-        self.window.show_input_panel("", "", self.on_done, None, self.on_cancel).settings().set("color_scheme", self.scheme)
+        self.input_panel(self.on_done, None, self.on_cancel)
 
     def on_cancel(self):
         self.proc.kill()
         self.output_view.close()
         self.window.set_layout(self.layout)
         self.window.focus_view(self.view)
+
+    def input_panel(self, on_done, on_change, on_cancel):
+        panel = self.window.show_input_panel("", "", on_done, on_change, on_cancel)
+        
+        panel.settings().set("color_scheme", self.scheme)
+        panel.settings().set("syntax", self.syntax)
 
     def do(self):
         while self.proc.poll() is None:
@@ -76,19 +82,18 @@ class Make(sublime_plugin.WindowCommand):
             string = "[Finished in %.1fs]" % elapsed
         
         self.output_view.run_command("append", {"characters":  string})
-        self.window.show_input_panel("", "", None, None, None).settings().set("color_scheme", self.scheme)
+        self.input_panel(None, None, None)
         self.window.run_command("hide_panel")
 
     def run(self, cmd, path = "", classpath = ""):
-        if cmd == "cmd":
-            name = "cmd"
-            # self.scheme = "Packages/Batch File/Batch File.tmLanguage"
-        else:
-            name = self.view.file_name()
+        self.name = "cmd" if cmd == "cmd" else self.view.file_name()
+        self.syntax = "Packages/Batch File/Batch File.tmLanguage" if cmd == "cmd" else self.view.settings().get("syntax")
 
         self.proc = Process(cmd, path, classpath)
         self.start_time = time.time()
         
-        self.set_layout(os.path.basename(name))
-        self.window.show_input_panel("", "", self.on_done, None, self.on_cancel).settings().set("color_scheme", self.scheme)
+        self.set_layout(os.path.basename(self.name))
+        
+        self.input_panel(self.on_done, None, self.on_cancel)
+        
         sublime.set_timeout_async(self.do)
