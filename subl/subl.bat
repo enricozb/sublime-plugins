@@ -1,3 +1,5 @@
+ECHO OFF
+
 IF "%1" == "push" (
     SET src="C:/Users/michael.opara.1/%2"
     SET dst="H:/WORK/%2"
@@ -15,5 +17,3 @@ IF EXIST "%dst%" (
 IF EXIST "%src%" (
     ROBOCOPY %src% %dst% /E 
 )
-
-PAUSE
