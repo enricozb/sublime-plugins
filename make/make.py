@@ -47,12 +47,14 @@ class Make(sublime_plugin.WindowCommand):
         self.window.new_file()
         self.window.active_view().set_name("[%s]" % name)
         self.window.active_view().set_scratch(True)
+        self.window.active_view().settings().set("scroll_past_end", False)
 
         self.output_view = self.window.active_view()
 
     def on_done(self, string):
         self.proc.write(string + "\n")
-        self.output_view.run_command("append", {"characters": string + "\n", "force": True, "scroll_to_end": True})
+        self.output_view.run_command("append", {"characters": string + "\n"})
+        self.output_view.run_command("move_to", {"to": "eof"})
         self.window.show_input_panel("", "", self.on_done, None, self.on_cancel).settings().set("color_scheme", self.scheme)
 
     def on_cancel(self):
@@ -63,7 +65,7 @@ class Make(sublime_plugin.WindowCommand):
 
     def do(self):
         while self.proc.poll() is None:
-           self.output_view.run_command("append", {"characters":  self.proc.read(), "force": True, "scroll_to_end": True}) 
+           self.output_view.run_command("append", {"characters":  self.proc.read()}) 
 
         exitcode = self.proc.poll()
         elapsed = time.time() - self.start_time
@@ -73,14 +75,20 @@ class Make(sublime_plugin.WindowCommand):
         else:
             string = "[Finished in %.1fs]" % elapsed
         
-        self.output_view.run_command("append", {"characters":  string, "force": True, "scroll_to_end": True})
+        self.output_view.run_command("append", {"characters":  string})
         self.window.show_input_panel("", "", None, None, None).settings().set("color_scheme", self.scheme)
         self.window.run_command("hide_panel")
 
-    def run(self, cmd = "python -u C:/Users/Music/Desktop/script.py", path = "", classpath = ""):
+    def run(self, cmd, path = "", classpath = ""):
+        if cmd == "cmd":
+            name = "cmd"
+            # self.scheme = "Packages/Batch File/Batch File.tmLanguage"
+        else:
+            name = self.view.file_name()
+
         self.proc = Process(cmd, path, classpath)
         self.start_time = time.time()
         
-        self.set_layout("output_view")
+        self.set_layout(os.path.basename(name))
         self.window.show_input_panel("", "", self.on_done, None, self.on_cancel).settings().set("color_scheme", self.scheme)
         sublime.set_timeout_async(self.do)
