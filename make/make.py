@@ -41,11 +41,11 @@ class Make(sublime_plugin.WindowCommand):
         self.layout = self.window.layout()
         self.scheme = self.view.settings().get("color_scheme")
 
-    def set_layout(self):
+    def set_layout(self, name):
         self.window.set_layout({"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0],"cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
         self.window.focus_group(1)
         self.window.new_file()
-        self.window.active_view().set_name("[output]")
+        self.window.active_view().set_name("[%s]" % name)
         self.window.active_view().set_scratch(True)
 
         self.output_view = self.window.active_view()
@@ -57,6 +57,8 @@ class Make(sublime_plugin.WindowCommand):
 
     def on_cancel(self):
         self.proc.kill()
+        self.output_view.close()
+        self.window.set_layout(self.layout)
         self.window.focus_view(self.view)
 
     def do(self):
@@ -72,12 +74,13 @@ class Make(sublime_plugin.WindowCommand):
             string = "[Finished in %.1fs]" % elapsed
         
         self.output_view.run_command("append", {"characters":  string, "force": True, "scroll_to_end": True})
+        self.window.show_input_panel("", "", None, None, None).settings().set("color_scheme", self.scheme)
         self.window.run_command("hide_panel")
 
     def run(self, cmd = "python -u C:/Users/Music/Desktop/script.py", path = "", classpath = ""):
         self.proc = Process(cmd, path, classpath)
         self.start_time = time.time()
         
-        self.set_layout()
+        self.set_layout("output_view")
         self.window.show_input_panel("", "", self.on_done, None, self.on_cancel).settings().set("color_scheme", self.scheme)
         sublime.set_timeout_async(self.do)
