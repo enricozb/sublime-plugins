@@ -9,15 +9,8 @@ class Process(object):
         env = os.environ.copy()
         env["PATH"] = os.path.expandvars("$PATH;" + path)
         env["CLASSPATH"] = os.path.expandvars("$CLASSPATH;" + classpath)
-        self.proc = subprocess.Popen(
-            args = cmd,
-            bufsize = 0,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.STDOUT,
-            shell = True,
-            env = env,
-            )
+        self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True, env = env)
 
     def kill(self):
         if sublime.platform() == "windows":
@@ -88,12 +81,9 @@ class Make(sublime_plugin.WindowCommand):
     def run(self, cmd, path = "", classpath = ""):
         self.name = "cmd" if cmd == "cmd" else self.view.file_name()
         self.syntax = "Packages/Batch File/Batch File.tmLanguage" if cmd == "cmd" else self.view.settings().get("syntax")
-
         self.proc = Process(cmd, path, classpath)
         self.start_time = time.time()
         
         self.set_layout(os.path.basename(self.name))
-        
         self.input_panel(self.on_done, None, self.on_cancel)
-        
         sublime.set_timeout_async(self.do)
