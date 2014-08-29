@@ -4,13 +4,15 @@ import sublime_plugin
 import subprocess
 import time
 
+# set for shell if not window along with syntax
+# figure out why python does not work
+
 class Process(object):
-    def __init__(self, cmd, path, classpath):
-        env = os.environ.copy()
-        env["PATH"] = os.path.expandvars("$PATH;" + path)
-        env["CLASSPATH"] = os.path.expandvars("$CLASSPATH;" + classpath)
+    def __init__(self, cmd, env):
+        proc_env = os.environ.copy()
+        proc_env.update(env)
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True, env = env)
+            stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True, env = proc_env)
 
     def kill(self):
         if sublime.platform() == "windows":
@@ -73,15 +75,13 @@ class Make(sublime_plugin.WindowCommand):
             string = "[Finished in %.1fs with exit code %d]" % (elapsed, exitcode)
         else:
             string = "[Finished in %.1fs]" % elapsed
-        
-        self.output_view.run_command("append", {"characters":  string})
-        self.input_panel(None, None, None)
-        self.window.run_command("hide_panel")
 
-    def run(self, cmd, path = "", classpath = ""):
+        self.output_view.run_command("append", {"characters":  string})
+
+    def run(self, cmd, env):
         self.name = "cmd" if cmd == "cmd" else self.view.file_name()
         self.syntax = "Packages/Batch File/Batch File.tmLanguage" if cmd == "cmd" else self.view.settings().get("syntax")
-        self.proc = Process(cmd, path, classpath)
+        self.proc = Process(cmd, env)
         self.start_time = time.time()
         
         self.set_layout(os.path.basename(self.name))
