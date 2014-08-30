@@ -6,7 +6,7 @@ import sublime_plugin
 class Peep(sublime_plugin.TextCommand):
     def run(self, edit):
         files = (os.path.dirname(view.file_name()) for window in sublime.windows() for view in window.views())
-        files = sum((glob.glob(dp + '/*') for dp in files), [])
+        files = sum((glob.glob(dirpath + '/*') for dirpath in files), [])
         files = filter(os.path.isfile, set(files))
         
         tolist = lambda file: [os.path.basename(file), file]
