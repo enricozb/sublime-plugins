@@ -29,7 +29,7 @@ class F5Command(sublime_plugin.TextCommand):
         path = ';'.join(sum(map(glob.glob, path), []))
         classpath = '.;'
 
-        cmd = getattr(self, ex, lambda run: '')(run).format(print(locals()) or locals())
+        cmd = getattr(self, ex, lambda run: '')(run).format(**locals())
 
         if cmd:
             self.view.window().run_command('make', {'cmd': cmd, 'env': {'path': path, 'classpath': classpath}})
