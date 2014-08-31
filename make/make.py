@@ -8,10 +8,11 @@ import time
 # figure out why python does not work
 
 class Process(object):
-    def __init__(self, cmd, env):
+    def __init__(self, cmd, cwd, env):
         env = dict(os.environ, **env)
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True, env = env)
+            stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
+            cwd = cwd, env = env)
 
     def kill(self):
         self.proc.stdin.close()
@@ -32,12 +33,6 @@ class Process(object):
         return self.proc.poll()
 
 class Make(sublime_plugin.WindowCommand):
-    def __init__(self, window):
-        self.window = window
-        self.view = self.window.active_view()
-        self.layout = self.window.layout()
-        self.scheme = self.view.settings().get('color_scheme')
-
     def set_layout(self, name):
         self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0],'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
         self.window.focus_group(1)
@@ -80,9 +75,14 @@ class Make(sublime_plugin.WindowCommand):
         self.output_view.run_command('append', {'characters':  string})
 
     def run(self, cmd, env = {}):
-        self.proc = Process(cmd, env)
+        self.view = self.window.active_view()
+        self.layout = self.window.layout()
+        self.scheme = self.view.settings().get('color_scheme')
+        self.name = self.view.file_name()
+
+        self.proc = Process(cmd, os.path.dirname(self.name), env)
         self.start_time = time.time()
         
-        self.set_layout(os.path.basename(self.view.file_name()))
+        self.set_layout(os.path.basename(self.name))
         self.input_panel(self.on_done, None, self.on_cancel)
         sublime.set_timeout_async(self.do)
