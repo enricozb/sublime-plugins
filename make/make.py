@@ -24,7 +24,9 @@ class Process(object):
             self.proc.terminate()
 
     def read(self):
-        return os.read(self.proc.stdout.fileno(), 2 ** 15).decode().replace('\r\n', '\n').replace('\r', '\n')
+        bytes = os.read(self.proc.stdout.fileno(), 2 ** 15)
+
+        return bytes.decode('cp1252').replace('\r\n', '\n').replace('\r', '\n')
 
     def write(self, string):
         os.write(self.proc.stdin.fileno(), string.encode())
@@ -34,7 +36,8 @@ class Process(object):
 
 class Make(sublime_plugin.WindowCommand):
     def set_layout(self, name):
-        self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0],'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
+        self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0],
+            'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
         self.window.focus_group(1)
         self.window.new_file()
         self.window.active_view().set_name('[%s]' % name)
