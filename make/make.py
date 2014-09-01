@@ -64,8 +64,8 @@ class Make(sublime_plugin.WindowCommand):
         while self.proc.poll() is None:
            self.output_view.run_command('append', {'characters':  self.proc.read()}) 
 
-        exitcode = self.proc.poll()
         elapsed = time.time() - self.start_time
+        exitcode = self.proc.poll()
 
         if exitcode:
             string = '[Finished in %.1fs with exit code %d]' % (elapsed, exitcode)
