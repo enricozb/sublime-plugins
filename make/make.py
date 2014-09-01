@@ -8,7 +8,7 @@ import time
 # figure out why python does not work
 
 class Process(object):
-    def __init__(self, cmd, cwd, env):
+    def __init__(self, cmd, cwd, **env):
         env = dict(os.environ, **env)
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
             stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
@@ -74,13 +74,13 @@ class Make(sublime_plugin.WindowCommand):
 
         self.output_view.run_command('append', {'characters':  string})
 
-    def run(self, cmd, env = {}):
+    def run(self, cmd, **env):
         self.view = self.window.active_view()
         self.layout = self.window.layout()
         self.scheme = self.view.settings().get('color_scheme')
         self.name = self.view.file_name()
 
-        self.proc = Process(cmd, os.path.dirname(self.name), env)
+        self.proc = Process(cmd, os.path.dirname(self.name), **env)
         self.start_time = time.time()
         
         self.set_layout(os.path.basename(self.name))
