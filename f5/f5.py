@@ -33,6 +33,6 @@ class F5(sublime_plugin.TextCommand):
 
         if cmd:
             self.view.window().run_command('make', {'cmd': cmd,
-                'env': {'PATH': path, 'CLASSPATH': classpath}})
+                'PATH': path, 'CLASSPATH': classpath})
         else:
             self.view.window().run_command('build')
