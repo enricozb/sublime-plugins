@@ -11,9 +11,9 @@ IF "%1" == "pull" (
 )
 
 IF EXIST "%dst%" (
-    RD /S /Q %dst%
+    RD /S /Q "%dst%"
 )
 
 IF EXIST "%src%" (
-    ROBOCOPY %src% %dst% /E 
+    ROBOCOPY "%src%" "%dst%" /E 
 )
