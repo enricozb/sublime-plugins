@@ -1,5 +1,5 @@
 import glob
-import os
+import os.path
 import sublime
 import sublime_plugin
 
