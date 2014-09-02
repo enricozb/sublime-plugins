@@ -26,12 +26,13 @@ class F5(sublime_plugin.TextCommand):
 
     def run(self, edit, run):
         classpath = '.;'
-        path = 'C:/Program Files*/Java/jdk*/bin;{sd}/*/bin;{sd}/Python*;'
+        path = 'C:/Program Files*/Java/jdk1.8.0*/bin;{sd}/*/bin;{sd}/Python*;'
         path = map(glob.glob, path.format(**vars(self)).split(';'))
         path = ';'.join(dir for dirs in path for dir in dirs)
         cmd = getattr(self, self.ex, lambda run: '')(run).format(**vars(self))
 
         if cmd:
+            print('running cmd "%s" with path "%s"' % (cmd, path))
             self.view.window().run_command('make', {'cmd': cmd,
                 'PATH': path, 'CLASSPATH': classpath})
         else:
