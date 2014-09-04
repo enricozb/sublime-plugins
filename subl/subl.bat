@@ -3,22 +3,22 @@
 SETLOCAL EnableDelayedExpansion
 
 IF %1 EQU push (
-    SET src=C:/Users/michael.opara.1
-    SET dst=H:/WORK
+    SET src=C:\Users\michael.opara.1
+    SET dst=H:\WORK
 )
 
 IF %1 EQU pull (
-    SET src=H:/WORK
-    SET dst=C:/Users/michael.opara.1
+    SET src=H:\WORK
+    SET dst=C:\Users\michael.opara.1
 )
 
-FOR /F %%G IN ('DIR /B %2') DO (
+FOR /F "usebackq delims=|" %%G IN (`DIR /B "%src%\%2"`) DO (
     SET src=%src%/%%G
     SET dst=%dst%/%%G
 
-    IF EXIST !src! (
+    IF EXIST !dst! (
         RD /S /Q !dst!
     )
     
-    ROBOCOPY !src! !dst! /E 
+    ROBOCOPY !src! !dst! /E
 )
