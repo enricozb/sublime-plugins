@@ -33,14 +33,6 @@ class Process(object):
         return self.proc.poll()
 
 class Make(sublime_plugin.WindowCommand):
-    def __init__(self, window):
-        self.window = window
-        self.view = self.window.active_view()
-        self.file_name = self.view.file_name()
-        self.layout = self.window.layout()
-        self.scheme = self.view.settings().get('color_scheme')
-        self.syntax = 'Packages/Text/Plain text.tmLanguage'
-
     def set_layout(self, name):
         self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0],
             'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
@@ -84,12 +76,17 @@ class Make(sublime_plugin.WindowCommand):
 
         self.output_view.run_command('append', {'characters':  string})
 
-    def run(self, cmd, name = '', syntax = '', **env):
-        self.syntax = syntax or self.syntax
-        self.proc = Process(cmd, os.path.dirname(self.file_name), env)
+    def run(self, cmd, name = '', syntax = 'Packages/Text/Plain text.tmLanguage', **env):
+        self.view = self.window.active_view()
+        self.file = self.view.file_name()
+
+        self.layout = self.window.layout()
+        self.scheme = self.view.settings().get('color_scheme')
+        self.proc = Process(cmd, os.path.dirname(self.file), env)
         self.start_time = time.time()
+        self.syntax = syntax
         
-        self.set_layout(name or os.path.basename(self.file_name))
+        self.set_layout(name or os.path.basename(self.file))
         self.input_panel(self.on_done, None, self.on_cancel)
         sublime.set_timeout_async(self.do)
 
