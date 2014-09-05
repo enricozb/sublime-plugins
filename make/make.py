@@ -7,7 +7,7 @@ import time
 # set for shell if not windows along with syntax
 # figure out why python does not work
 
-class Process(object):
+class Process:
     def __init__(self, cmd, cwd, env):
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
             stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
