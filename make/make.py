@@ -9,10 +9,9 @@ import time
 
 class Process(object):
     def __init__(self, cmd, cwd, env):
-        env = dict(os.environ, **env)
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
             stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
-            cwd = cwd, env = env)
+            cwd = cwd, env = dict(os.environ, **env))
 
     def kill(self):
         self.proc.stdin.close()
@@ -24,9 +23,8 @@ class Process(object):
             self.proc.terminate()
 
     def read(self):
-        bytes = os.read(self.proc.stdout.fileno(), 2 ** 15)
-
-        return bytes.decode('cp1252').replace('\r\n', '\n').replace('\r', '\n')
+        return os.read(self.proc.stdout.fileno(), 2 ** 15).decode('cp1252'
+            ).replace('\r\n', '\n').replace('\r', '\n')
 
     def write(self, string):
         os.write(self.proc.stdin.fileno(), string.encode())
