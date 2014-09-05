@@ -12,7 +12,7 @@ IF %1 EQU pull (
     SET dst=C:\Users\michael.opara.1
 )
 
-FOR /F "usebackq delims=|" %%G IN (`DIR /B "%src%\%2"`) DO (
+FOR /F "usebackq delims=|" %%G IN (`FORFILES /p "%src%" /m %2`) DO (
     SET src=%src%/%%G
     SET dst=%dst%/%%G
 
