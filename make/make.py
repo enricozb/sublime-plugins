@@ -88,10 +88,11 @@ class Make(sublime_plugin.WindowCommand):
 
     def run(self, cmd, name = '', syntax = '', **env):
         self.syntax = syntax or self.syntax
-
         self.proc = Process(cmd, os.path.dirname(self.file_name), env)
         self.start_time = time.time()
         
         self.set_layout(name or os.path.basename(self.file_name))
         self.input_panel(self.on_done, None, self.on_cancel)
         sublime.set_timeout_async(self.do)
+
+        print("running cmd '%s' with path '%s'" % (cmd, env.get('PATH', '')))
