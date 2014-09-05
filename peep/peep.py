@@ -17,4 +17,3 @@ class Peep(sublime_plugin.TextCommand):
         on_select = lambda i: self.view.window().open_file(items[index if i == -1 else i][1])
 
         self.view.window().show_quick_panel(items, on_select, 0, index)
-
