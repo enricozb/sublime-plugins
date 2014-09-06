@@ -5,7 +5,6 @@ import sublime_plugin
 import subprocess
 import time
 
-# set for shell if not windows along with syntax
 # figure out why python does not work
 
 class Process:
