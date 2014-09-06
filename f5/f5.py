@@ -15,7 +15,7 @@ class F5(sublime_plugin.TextCommand):
         return 'python -u "{fn}"'
 
     def pde(self, run):
-        #make sure dir is correct and return ''
+        # make sure dir is correct and return ''
         pass
 
     def run(self, edit, run):
