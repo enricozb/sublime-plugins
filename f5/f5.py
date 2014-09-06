@@ -15,7 +15,7 @@ class F5(sublime_plugin.TextCommand):
         return 'python -u "{fn}"'
 
     def pde(self, run):
-        #place in dir and return ''
+        #make sure dir is correct and return ''
         pass
 
     def run(self, edit, run):
@@ -33,7 +33,7 @@ class F5(sublime_plugin.TextCommand):
         cmd = getattr(self, ex, lambda run: '')(run).format(**locals())
 
         if cmd:
-            self.view.window().run_command('make', {'cmd': cmd, 'PATH': path,
+            self.view.window().run_command('subliminal', {'cmd': cmd, 'PATH': path,
                 'CLASSPATH': classpath})
         else:
             self.view.window().run_command('build')
