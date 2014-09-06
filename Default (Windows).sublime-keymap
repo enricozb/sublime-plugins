@@ -1,5 +1,5 @@
-    { "keys": ["f1"], "command": "make", "args": { "cmd": "cmd", "name": "cmd", "syntax": "Packages/Batch File/Batch File.tmLanguage" } },
-    // { "keys": ["f1"], "command": "make", "args": { "cmd": "bash", "name": "bash", "syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage" } },
+    { "keys": ["f1"], "command": "subliminal", "args": { "cmd": "cmd", "name": "cmd", "syntax": "Packages/Batch File/Batch File.tmLanguage" } },
+    // { "keys": ["f1"], "command": "subliminal", "args": { "cmd": "bash", "name": "bash", "syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage" } },
     
     { "keys": ["f5"], "command": "f5", "args": { "run": true } },
         { "keys": ["ctrl+b"], "command": "f5", "args": { "run": false } },
