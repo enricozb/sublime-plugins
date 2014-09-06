@@ -26,8 +26,6 @@ class F5(sublime_plugin.TextCommand):
         ex = os.path.splitext(fn)[1].strip('.').lower()
         sd = os.path.dirname(os.path.dirname(sublime.executable_path()))
 
-        print(locals())
-
         classpath = '.;'
         path = 'C:/Program Files*/Java/jdk*/bin;{sd}/*/bin;{sd}/Python*;{dp}'
         path = map(glob.glob, path.format(**locals()).split(';'))
