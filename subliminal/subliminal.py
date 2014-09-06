@@ -5,8 +5,6 @@ import sublime_plugin
 import subprocess
 import time
 
-# figure out why python does not work
-
 class Process:
     def __init__(self, cmd, cwd, env):
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
@@ -32,7 +30,7 @@ class Process:
     def poll(self):
         return self.proc.poll()
 
-class Make(sublime_plugin.WindowCommand):
+class Subliminal(sublime_plugin.WindowCommand):
     def set_layout(self, name):
         self.window.set_layout({'cols': [0.0, 0.5, 1.0], 'rows': [0.0, 1.0],
             'cells': [[0, 0, 1, 1], [1, 0, 2, 1]]})
