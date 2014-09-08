@@ -77,6 +77,8 @@ class Subliminal(sublime_plugin.WindowCommand):
     def run(self, cmd, name = '', syntax = 'Packages/Text/Plain text.tmLanguage', **env):
         self.view = self.window.active_view()
         self.file = self.view.file_name()
+        
+        assert self.view and self.file
 
         self.layout = self.window.layout()
         self.scheme = self.view.settings().get('color_scheme')
