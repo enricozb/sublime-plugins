@@ -13,8 +13,8 @@ IF %1 EQU pull (
 )
 
 FOR /F "usebackq delims=|" %%G IN (`FORFILES /p "%src%" /m %2`) DO (
-    SET src=%src%\\%%G
-    SET dst=%dst%\\%%G
+    SET src=%src%\%%~G
+    SET dst=%dst%\%%~G
 
     IF EXIST "!dst!" (
         RD /S /Q "!dst!"
