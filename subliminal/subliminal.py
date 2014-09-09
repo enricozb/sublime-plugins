@@ -20,8 +20,12 @@ class Process:
             self.proc.terminate()
 
     def read(self):
-        return os.read(self.proc.stdout.fileno(), 2 ** 15).decode('cp1252'
-            ).replace('\r\n', '\n').replace('\r', '\n')
+        bytes = os.read(self.proc.stdout.fileno(), 2 ** 15)
+
+        try: 
+            return bytes.decode().replace('\r\n', '\n').replace('\r', '\n')
+        except UnicodeDecodeError:
+            return bytes.decode('cp1252').replace('\r\n', '\n').replace('\r', '\n')
 
     def write(self, string):
         os.write(self.proc.stdin.fileno(), string.encode())
