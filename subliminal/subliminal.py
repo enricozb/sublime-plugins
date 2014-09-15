@@ -48,10 +48,13 @@ class Subliminal(sublime_plugin.WindowCommand):
         self.output_view.settings().set("color_scheme", self.scheme)
 
     def on_done(self, string):
-        self.proc.write(string + "\n")
-        self.output_view.run_command("append", {"characters": string + "\n"})
-        self.output_view.run_command("move_to", {"to": "eof"})
-        self.input_panel(self.on_done, None, self.on_cancel)
+        try:
+            self.proc.write(string + "\n")
+            self.output_view.run_command("append", {"characters": string + "\n"})
+            self.output_view.run_command("move_to", {"to": "eof"})
+            self.input_panel(self.on_done, None, self.on_cancel)
+        except OSError:
+            self.window.run_command("hide_panel")
 
     def on_cancel(self):
         self.proc.kill()
