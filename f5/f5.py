@@ -28,7 +28,7 @@ class F5(sublime_plugin.TextCommand):
         ex = os.path.splitext(fn)[1].strip(".").lower()
         sd = os.path.dirname(os.path.dirname(sublime.executable_path()))
 
-        classpath = ".;H:/WORK/rhino1_7R4"
+        classpath = ".;H:/WORK/rhino1_7R4/js.jar"
         path = "C:/Program Files*/Java/jdk*/bin;{sd}/*/bin;{sd}/Python*;{dp}"
         path = map(glob.glob, path.format(**locals()).split(";"))
         path = ";".join(dir for dirs in path for dir in dirs)
