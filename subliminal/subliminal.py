@@ -111,7 +111,8 @@ class SubliminalCommand(sublime_plugin.WindowCommand):
         self.update_vars(syntax)
         self.update_env(env)
 
-        self.proc = Process(cmd.format(**vars(self)), self.dp, env)
+        cmd = cmd.format(**vars(self))
+        self.proc = Process(cmd, self.dp, env)
 
         self.update_layout()
         self.input_panel(self.on_done, self.on_cancel)
