@@ -1,8 +1,10 @@
     { "keys": ["f1"], "command": "subliminal", "args": { "cmd": "cmd",
-                                                         "syntax": "Packages/Batch File/Batch File.tmLanguage"} },
+                                                         "syntax": "Packages/Batch File/Batch File.tmLanguage",
+                                                         "PATH": "$PATH;{sd}/Git/cmd"} },
     { "keys": ["f2"], "command": "subliminal", "args": { "cmd": "java org.mozilla.javascript.tools.shell.Main",
                                                          "syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-                                                         "CLASSPATH": "H:/WORK/rhino1_7R4/js.jar"} },
+                                                         "PATH": "C:/Program Files*/Java/jdk*/bin",
+                                                         "CLASSPATH": "{st}/Data/Packages/User/js.jar"} },
     
     { "keys": ["f5"], "command": "f5", "args": { "run": true } },
     { "keys": ["ctrl+b"], "command": "f5", "args": { "run": false } },
@@ -10,3 +12,4 @@
     { "keys": ["ctrl+shift+o"], "command": "peep"},
    
     { "keys": ["f12"], "command": "test" }
+
