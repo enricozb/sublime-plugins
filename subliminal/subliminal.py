@@ -104,8 +104,8 @@ class SubliminalCommand(sublime_plugin.WindowCommand):
     def input_panel(self, on_done, on_cancel):
         panel = self.window.show_input_panel("", "", on_done, None, on_cancel)
         
-        panel.settings().set("syntax", self.syntax)
         panel.settings().set("color_scheme", self.scheme)
+        panel.settings().set("syntax", self.syntax)
     
     def run(self, cmd, syntax = "Packages/Text/Plain text.tmLanguage", **env):
         self.update_vars(syntax)
@@ -118,4 +118,4 @@ class SubliminalCommand(sublime_plugin.WindowCommand):
         self.input_panel(self.on_done, self.on_cancel)
 
         sublime.set_timeout_async(self.update_output)
-        sublime.status_message("running '%s'" % cmd)
+        sublime.status_message('running "%s"' % cmd)
