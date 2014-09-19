@@ -21,4 +21,3 @@ class F5(sublime_plugin.TextCommand):
                 "CLASSPATH": classpath})
         else:
             self.view.window().run_command("build")
-
