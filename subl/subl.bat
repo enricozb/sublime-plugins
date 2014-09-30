@@ -20,5 +20,5 @@ FOR /F "usebackq delims=|" %%G IN (`FORFILES /p "%src%" /m %2`) DO (
         RD /S /Q "!dst!"
     )
     
-    ROBOCOPY "!src!" "!dst!" /E
+    ROBOCOPY "!src!" "!dst!" /MIR
 )
