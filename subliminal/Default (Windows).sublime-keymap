@@ -1,15 +1,12 @@
 [
-    { "keys": ["f1"], "command": "subliminal", "args": { "cmd": "cmd",
-                                                         "syntax": "Packages/Batch File/Batch File.tmLanguage",
-                                                         "PATH": "$PATH"} },
-    { "keys": ["f2"], "command": "subliminal", "args": { "cmd": "java org.mozilla.javascript.tools.shell.Main",
-                                                         "syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-                                                         "PATH": "C:/Program Files*/Java/jdk*/bin",
-                                                         "CLASSPATH": "{st}/Data/Packages/User/*.jar"} },
-    { "keys": ["f3"], "command": "subliminal", "args": { "cmd": "java bsh.Interpreter",
-                                                         "syntax": "Packages/Java/Java.tmLanguage",
-                                                         "PATH": "C:/Program Files*/Java/jdk*/bin",
-                                                         "CLASSPATH": "{st}/Data/Packages/User/*.jar"} },
-    { "keys": ["enter"], "command": "pass", "context": [{"key": "input"}]},
-    { "keys": ["escape"], "command": "pass", "context": [{"key": "kill"}]},
+	{ "keys": ["f1"], "command": "subliminal", "args":
+		{ "cmd": "cmd", "syntax": "Packages/Batch File/Batch File.tmLanguage", "PATH": "$PATH" } },
+	{ "keys": ["f2"], "command": "subliminal", "args":
+		{ "cmd": "java org.mozilla.javascript.tools.shell.Main", "syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+		  "PATH": "C:/Program Files*/Java/jdk*/bin", "CLASSPATH": "{st}/Data/Packages/User/*.jar" } },
+	{ "keys": ["f3"], "command": "subliminal", "args":
+		{ "cmd": "java bsh.Interpreter", "syntax": "Packages/Java/Java.tmLanguage", "PATH": "C:/Program Files*/Java/jdk*/bin",
+		  "CLASSPATH": "{st}/Data/Packages/User/*.jar" } },
+	{ "keys": ["enter"], "command": "pass", "context": [{ "key": "input" }] },
+	{ "keys": ["escape"], "command": "pass", "context": [{ "key": "kill" }] },
 ]
