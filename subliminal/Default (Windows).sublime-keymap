@@ -11,5 +11,5 @@
                                                          "PATH": "C:/Program Files*/Java/jdk*/bin",
                                                          "CLASSPATH": "{st}/Data/Packages/User/*.jar"} },
     { "keys": ["enter"], "command": "pass", "context": [{"key": "input"}]},
-	  { "keys": ["escape"], "command": "pass", "context": [{"key": "kill"}]},
+    { "keys": ["escape"], "command": "pass", "context": [{"key": "kill"}]},
 ]
