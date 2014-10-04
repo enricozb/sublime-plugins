@@ -5,14 +5,16 @@ import sublime_plugin
 import subprocess
 import time
 
-# implement restore_layout
+output  = None
+pointer = None
+process = None
 
-class Process:
+class Process():
     def __init__(self, cmd, cwd, env):
         self.start_time = time.time()
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
             stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
-            cwd = cwd or None, env = dict(os.environ, **env))
+            cwd = cwd, env = env)
 
     def kill(self):
         self.proc.stdin.close()
@@ -37,85 +39,72 @@ class Process:
     def poll(self):
         return self.proc.poll()
 
-class SubliminalCommand(sublime_plugin.WindowCommand):
-    def update_vars(self, syntax):
-        self.view = self.window.active_view()
-        self.layout = self.window.layout()
-        self.scheme = self.view.settings().get("color_scheme")
-        self.syntax = syntax
+class Subliminal(sublime_plugin.TextCommand):
+    def update(self, cmd, env):
+        fp = self.view.file_name() or ""
+        dp = os.path.dirname(fp)
+        fn = os.path.basename(fp)
+        bn = os.path.splitext(fn)[0]
+        ex = os.path.splitext(fn)[1].strip(".").lower()
+        st = os.path.dirname(sublime.executable_path())
+        sd = os.path.dirname(st)
 
-        self.fp = self.view.file_name() or ""
-        self.dp = os.path.dirname(self.fp)
-        self.fn = os.path.basename(self.fp)
-        self.bn = os.path.splitext(self.fn)[0]
-        self.ex = os.path.splitext(self.fn)[1].strip(".").lower()
-        self.st = os.path.dirname(sublime.executable_path())
-        self.sd = os.path.dirname(self.st)
+        local = locals()
 
-    def update_env(self, env):
         for var in env:
-            env[var] = os.path.expandvars(env[var]).format(**vars(self)).split(";")
-            env[var] = ";".join(dir for dirs in map(glob.glob, env[var]) for dir in dirs)
+            env[var] = os.path.expandvars(env[var]).format(**local).split(";")
+            env[var] = ";".join(path for iglob in map(glob.iglob, env[var]) for path in iglob)
 
-    def update_layout(self):
-        self.output = self.window.new_file()
+        return cmd.format(**local), dp
 
-        self.window.set_layout({"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0],
-            "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]}) # test if necessary
-        self.window.set_view_index(self.output, 1, 0)
-        self.window.focus_view(self.view) # mvoe to bottom?
-        
-        self.output.set_scratch(True)
-        self.output.set_name("[%s]" % self.fn)
-        self.output.settings().set("word_wrap", True)
-        self.output.settings().set("syntax", self.syntax)
-        self.output.settings().set("scroll_past_end", False)
-        self.output.settings().set("color_scheme", self.scheme)
+    def layout(self, syntax, view):
+        view.settings().set("word_wrap", True)
+        view.settings().set("syntax", syntax)
+        view.settings().set("scroll_past_end", False)
+        view.settings().set("color_scheme", self.view.settings().get("color_scheme"))
+        self.view.window().run_command("show_panel", {"panel": "output."})
 
-    def update_output(self):
-        while self.proc.poll() is None:
-           self.output.run_command("append", {"characters":  self.proc.read()}) 
+        return view
 
-        elapsed = time.time() - self.proc.start_time
-        exitcode = self.proc.poll()
+    def output(self, view, proc):
+        global output, pointer, process
+
+        view.window().focus_view(view)
+
+        while proc.poll() is None:
+            view.run_command("append", {"characters":  proc.read()})
+            view.run_command("move_to", {"to":  "eof"})
+
+            pointer = view.size()
+
+        elapsed = time.time() - proc.start_time
+        exitcode = proc.poll()
 
         if exitcode:
             string = "[Finished in %.1fs with exit code %d]" % (elapsed, exitcode)
         else:
             string = "[Finished in %.1fs]" % elapsed
 
-        self.output.run_command("append", {"characters":  string})
+        view.run_command("append", {"characters":  string})
 
-    def on_done(self, string):
-        try:
-            self.proc.write(string + "\n")
-            self.output.run_command("append", {"characters": string + "\n"})
-            self.output.run_command("move_to", {"to": "eof"})
-            self.input_panel(self.on_done, self.on_cancel)
-        except OSError:
-            self.window.run_command("hide_panel")
+        # reassign to None to allow subliminal to be ran again
+        output = pointer = process = None
 
-    def on_cancel(self):
-        self.proc.kill()
-        self.output.close()
-        self.window.set_layout(self.layout)
-        self.window.focus_view(self.view)
+    def run(self, edit, cmd, syntax = "Packages/Text/Plain text.tmLanguage", **env):
+        global process, output
 
-    def input_panel(self, on_done, on_cancel):
-        panel = self.window.show_input_panel("", "", on_done, None, on_cancel)
-        
-        panel.settings().set("color_scheme", self.scheme)
-        panel.settings().set("syntax", self.syntax)
-    
-    def run(self, cmd, syntax = "Packages/Text/Plain text.tmLanguage", **env):
-        self.update_vars(syntax)
-        self.update_env(env)
+        # prevents multiple processes from running at once
+        if (output or pointer or process) is None:
+            cmd, dp = self.update(cmd, env)
+            process = Process(cmd, dp or None, env)
+            output  = self.layout(syntax, self.view.window().create_output_panel(""))
 
-        cmd = cmd.format(**vars(self))
-        self.proc = Process(cmd, self.dp, env)
+            sublime.set_timeout_async(lambda: self.output(output, process))
 
-        self.update_layout()
-        self.input_panel(self.on_done, self.on_cancel)
-
-        sublime.set_timeout_async(self.update_output)
-        sublime.status_message('running "%s"' % cmd)
+class Listener(sublime_plugin.EventListener):
+    def on_query_context(self, view, key, operator, operand, match_all):
+        if view == output:
+            if key == "input":
+                process.write(output.substr(sublime.Region(pointer, output.size())) + "\n")
+            if key == "kill":
+                process.kill()
