@@ -49,13 +49,11 @@ class Subliminal(sublime_plugin.TextCommand):
         st = os.path.dirname(sublime.executable_path())
         sd = os.path.dirname(st)
 
-        local = locals()
-
         for var in env:
-            env[var] = os.path.expandvars(env[var]).format(**local).split(";")
+            env[var] = os.path.expandvars(env[var]).format(**locals()).split(";")
             env[var] = ";".join(path for iglob in map(glob.iglob, env[var]) for path in iglob)
 
-        return cmd.format(**local), dp
+        return cmd.format(**locals()), dp
 
     def layout(self, syntax, view):
         view.settings().set("word_wrap", True)
@@ -63,14 +61,13 @@ class Subliminal(sublime_plugin.TextCommand):
         view.settings().set("scroll_past_end", False)
         view.settings().set("color_scheme", self.view.settings().get("color_scheme"))
         self.view.window().run_command("show_panel", {"panel": "output."})
+        self.view.window().focus_view(view)
 
         return view
 
     def output(self, view, proc):
         global output, pointer, process
-
-        view.window().focus_view(view)
-
+        
         while proc.poll() is None:
             view.run_command("append", {"characters":  proc.read()})
             view.run_command("move_to", {"to":  "eof"})
@@ -87,13 +84,13 @@ class Subliminal(sublime_plugin.TextCommand):
 
         view.run_command("append", {"characters":  string})
 
-        # reassign to None to allow subliminal to be ran again
+        # reassign to None once finished to allow Subliminal to be run again
         output = pointer = process = None
 
     def run(self, edit, cmd, syntax = "Packages/Text/Plain text.tmLanguage", **env):
         global process, output
 
-        # prevents multiple processes from running at once
+        # prevents Subliminal from being run multiple times at once
         if (output or pointer or process) is None:
             cmd, dp = self.update(cmd, env)
             process = Process(cmd, dp or None, env)
@@ -104,7 +101,7 @@ class Subliminal(sublime_plugin.TextCommand):
 class Listener(sublime_plugin.EventListener):
     def on_query_context(self, view, key, operator, operand, match_all):
         if view == output:
-            if key == "input":
+            if key == "write":
                 process.write(output.substr(sublime.Region(pointer, output.size())) + "\n")
             if key == "kill":
                 process.kill()
