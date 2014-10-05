@@ -91,12 +91,13 @@ class Subliminal(sublime_plugin.TextCommand):
         global process, output
 
         # prevents Subliminal from being run multiple times at once
-        if (output or pointer or process) is None:
+        if output is pointer is process is None:
             cmd, dp = self.update(cmd, env)
             process = Process(cmd, dp or None, env)
             output  = self.layout(syntax, self.view.window().create_output_panel(""))
 
             sublime.set_timeout_async(lambda: self.output(output, process))
+            sublime.status_message('running cmd "%s"' % cmd)
 
 class Listener(sublime_plugin.EventListener):
     def on_query_context(self, view, key, operator, operand, match_all):
