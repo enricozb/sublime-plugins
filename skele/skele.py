@@ -40,5 +40,3 @@ class Skeleton(sublime_plugin.EventListener):
         if view.size() == 0 and snippet:
             view.sel().add(sublime.Region(0, view.size()))
             view.run_command("insert_snippet", {"contents": snippet})
-
-'source.c, source.c++ '
