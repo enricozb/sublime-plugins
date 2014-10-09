@@ -5,16 +5,14 @@ import sublime_plugin
 import subprocess
 import time
 
-output  = None
-pointer = None
-process = None
+console = pointer = process = None
 
 class Process():
     def __init__(self, cmd, cwd, env):
         self.start_time = time.time()
         self.proc = subprocess.Popen(args = cmd, bufsize = 0, stdin = subprocess.PIPE,
             stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = True,
-            cwd = cwd, env = env)
+            cwd = cwd, env = dict(os.environ, **env))
 
     def kill(self):
         self.proc.stdin.close()
@@ -53,7 +51,7 @@ class Subliminal(sublime_plugin.TextCommand):
             env[var] = os.path.expandvars(env[var]).format(**locals()).split(";")
             env[var] = ";".join(path for iglob in map(glob.iglob, env[var]) for path in iglob)
 
-        return cmd.format(**locals()), dp
+        return cmd.format(**locals()), dp if os.path.exists(dp) else None
 
     def layout(self, syntax, view):
         view.settings().set("word_wrap", True)
@@ -66,7 +64,7 @@ class Subliminal(sublime_plugin.TextCommand):
         return view
 
     def output(self, view, proc):
-        global output, pointer, process
+        global console, pointer, process
         
         while proc.poll() is None:
             view.run_command("append", {"characters":  proc.read()})
@@ -74,7 +72,7 @@ class Subliminal(sublime_plugin.TextCommand):
 
             pointer = view.size()
 
-        elapsed = time.time() - proc.start_time
+        elapsed  = time.time() - proc.start_time
         exitcode = proc.poll()
 
         if exitcode:
@@ -85,24 +83,78 @@ class Subliminal(sublime_plugin.TextCommand):
         view.run_command("append", {"characters":  string})
 
         # reassign to None once finished to allow Subliminal to be run again
-        output = pointer = process = None
+        console = pointer = process = None
 
     def run(self, edit, cmd, syntax = "Packages/Text/Plain text.tmLanguage", **env):
-        global process, output
+        global console, process
 
         # prevents Subliminal from being run multiple times at once
-        if output is pointer is process is None:
+        if console is pointer is process is None:
             cmd, dp = self.update(cmd, env)
-            process = Process(cmd, dp or None, env)
-            output  = self.layout(syntax, self.view.window().create_output_panel(""))
+            process = Process(cmd, dp, env)
+            console = self.layout(syntax, self.view.window().create_output_panel(""))
 
-            sublime.set_timeout_async(lambda: self.output(output, process))
+            sublime.set_timeout_async(lambda: self.output(console, process))
             sublime.status_message('running cmd "%s"' % cmd)
 
 class Listener(sublime_plugin.EventListener):
-    def on_query_context(self, view, key, operator, operand, match_all):
-        if view == output:
-            if key == "write":
-                process.write(output.substr(sublime.Region(pointer, output.size())) + "\n")
-            if key == "kill":
-                process.kill()
+    def on_window_command(self, window, command_name, args):
+        if process and command_name == "hide_panel":
+            process.kill()
+            
+    def on_text_command(self, view, command_name, args):
+        if view == console:
+            string = view.substr(sublime.Region(pointer, view.size()))
+            empty_command  = "revert", {} # seems to have no effect on nonbuffer views
+            insert_command = "insert", {"characters": ""}
+
+            if (command_name, args) == ("insert", {"characters": "\n"}):
+                process.write(string + "\n")
+            elif command_name == "move":
+                if args["by"] == "lines":
+                    if args["forward"]:
+                        return empty_command # for now
+                    else:
+                        return empty_command # for now
+                else:
+                    print("pointer", pointer)
+                    view.run_command(command_name, args)
+                    
+                    sel = [sublime.Region(max(reg.a, pointer), max(reg.b, pointer)) for reg in view.sel()] # allows cursor to move past
+
+                    view.sel().clear()
+                    view.sel().add_all(sel)
+                    print("begin", min(view.sel()).begin())
+                        
+                    return empty_command
+            elif command_name == "left_delete":
+                if min(view.sel()).begin() <= pointer:
+                    return empty_command
+            elif command_name == "right_delete":
+                if min(view.sel()).begin() <= pointer:
+                    return empty_command
+            elif command_name == "cut": # get intersection and catch for line delete
+                max_reg = max(view.sel())
+                view.sel().clear()
+                view.sel().add(sublime.Region(pointer, view.size()))
+                return insert_command
+            elif command_name == "select_all": #get to redraw
+                view.sel().clear()
+                view.sel().add(sublime.Region(pointer, view.size()))
+                return empty_command
+            elif command_name == "swap_line_up": #prevent
+                return empty_command
+            elif command_name == "swap_line_down": #prevent
+                return empty_command
+    #         elif command_name == "expand_selection": #bounds
+    #             pass
+    #         elif command_name == "drag_select": #bounds
+    #             pass
+            # elif command_name == "copy": #bounds
+            #     pass
+    #         elif command_name == "paste": #bounds
+    #             pass
+    #         elif command_name == "undo": #bounds
+    #             pass
+    #         elif command_name == "redo": #bounds
+    #             pass
