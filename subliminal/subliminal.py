@@ -65,10 +65,12 @@ class Subliminal(sublime_plugin.TextCommand):
 
     def output(self, view, proc):
         global console, pointer, process
+
+        pointer = view.size()
         
         while proc.poll() is None:
-            view.run_command("append", {"characters":  proc.read()})
-            view.run_command("move_to", {"to":  "eof"})
+            view.run_command("append", {"characters": proc.read()})
+            view.run_command("move_to", {"to": "eof"})
 
             pointer = view.size()
 
@@ -105,56 +107,20 @@ class Listener(sublime_plugin.EventListener):
     def on_text_command(self, view, command_name, args):
         if view == console:
             string = view.substr(sublime.Region(pointer, view.size()))
-            empty_command  = "revert", {} # seems to have no effect on nonbuffer views
-            insert_command = "insert", {"characters": ""}
 
             if (command_name, args) == ("insert", {"characters": "\n"}):
                 process.write(string + "\n")
-            elif command_name == "move":
-                if args["by"] == "lines":
-                    if args["forward"]:
-                        return empty_command # for now
-                    else:
-                        return empty_command # for now
-                else:
-                    print("pointer", pointer)
-                    view.run_command(command_name, args)
-                    
-                    sel = [sublime.Region(max(reg.a, pointer), max(reg.b, pointer)) for reg in view.sel()] # allows cursor to move past
 
-                    view.sel().clear()
-                    view.sel().add_all(sel)
-                    print("begin", min(view.sel()).begin())
-                        
-                    return empty_command
-            elif command_name == "left_delete":
-                if min(view.sel()).begin() <= pointer:
-                    return empty_command
-            elif command_name == "right_delete":
-                if min(view.sel()).begin() <= pointer:
-                    return empty_command
-            elif command_name == "cut": # get intersection and catch for line delete
-                max_reg = max(view.sel())
-                view.sel().clear()
-                view.sel().add(sublime.Region(pointer, view.size()))
-                return insert_command
-            elif command_name == "select_all": #get to redraw
-                view.sel().clear()
-                view.sel().add(sublime.Region(pointer, view.size()))
-                return empty_command
-            elif command_name == "swap_line_up": #prevent
-                return empty_command
-            elif command_name == "swap_line_down": #prevent
-                return empty_command
-    #         elif command_name == "expand_selection": #bounds
-    #             pass
-    #         elif command_name == "drag_select": #bounds
-    #             pass
-            # elif command_name == "copy": #bounds
-            #     pass
-    #         elif command_name == "paste": #bounds
-    #             pass
-    #         elif command_name == "undo": #bounds
-    #             pass
-    #         elif command_name == "redo": #bounds
-    #             pass
+            "move"
+            "left_delete"
+            "right_delete"
+            "cut"
+            "select_all"
+            "swap_line_up"
+            "swap_line_down"
+            "expand_selection"
+            "drag_select"
+            "copy"
+            "paste"
+            "undo"
+            "redo"
