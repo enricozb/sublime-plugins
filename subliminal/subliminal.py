@@ -105,11 +105,14 @@ class Listener(sublime_plugin.EventListener):
             process.kill()
             
     def on_text_command(self, view, command_name, args):
+        global pointer
+
         if view == console:
             string = view.substr(sublime.Region(pointer, view.size()))
 
             if (command_name, args) == ("insert", {"characters": "\n"}):
                 process.write(string + "\n")
+                pointer = view.size()
 
             "move"
             "left_delete"
